@@ -1,6 +1,8 @@
 """Cog for n-word counting and storing logic"""
 import random
 import string
+import asyncio
+import discord.ext
 from typing import List
 
 import discord
@@ -12,7 +14,10 @@ from utils.mongo_instance import database
 NWORDS_LIST = [
     (chr(110) + chr(105) + chr(103) + chr(103) + chr(97)),
     (chr(47) + chr(92) + chr(47) + chr(105) + chr(103) + chr(103) + chr(97)),
-    (chr(124) + chr(92) + chr(47) + chr(105) + chr(103) + chr(103) + chr(97))
+    (chr(124) + chr(92) + chr(47) + chr(105) + chr(103) + chr(103) + chr(97)),
+    (chr(114) + chr(97) + chr(116) + chr(105) + chr(111)),
+    (chr(100) + chr(97) + chr(118) + chr(105) + chr(100)),
+    (chr(104) + chr(116) + chr(116) + chr(112) + chr(115) + chr(58) + chr(47) + chr(47) + chr(116) + chr(119) + chr(105) + chr(116) + chr(116) + chr(101) + chr(114) + chr(46) + chr(99) + chr(111) + chr(109) + chr(47))
 ]
 HARD_RS_LIST = [
     (chr(110) + chr(105) + chr(103) + chr(103) + chr(101) + chr(114)),
@@ -82,11 +87,12 @@ class NWordCounter(commands.Cog):
         if nword_count < 5:
             msg = random.choice(
                 [
-                    "Bro? :face_with_raised_eyebrow::camera_with_flash:",
-                    "??? :face_with_raised_eyebrow::camera_with_flash:",
-                    "CAUGHT :camera_with_flash:",
-                    "4K :camera_with_flash:",
-                    ":face_with_raised_eyebrow:"
+                    "Tu te fous de ma gueule ? :face_with_raised_eyebrow::camera_with_flash:",
+                    "APANIAN ? :face_with_raised_eyebrow::camera_with_flash:",
+                    "Ratio plus raciste :camera_with_flash:",
+                    "Nigga toi même bougnoule :camera_with_flash:",
+                    "Je baise ta mère :face_with_raised_eyebrow:",
+                    "ESCLAVE DE MERDE"
                 ]
             )
         elif nword_count < 25:
@@ -124,43 +130,45 @@ class NWordCounter(commands.Cog):
             )
         
         return msg
-    
 
-    @commands.Cog.listener()
-    async def on_message(self, message):
-        """Detect n-words"""
-        if message.author == self.bot.user:  # Ignore reading itself.
-            return
-        
-        guild = message.guild
-        msg = message.content
-        author = message.author  # Should fetch user by ID instead of name.
 
-        # Ensure guild has its own place in the database.
-        if not self.db.guild_in_database(guild.id):
-            self.db.create_database(guild.id, guild.name)
-        
-        # Bot reaction to any n-word occurrence.
-        num_nwords = self.count_nwords(msg)
-        if num_nwords > 0:
-            if message.webhook_id:  # Ignore webhooks.
-                await message.reply("Not a person, I won't count this.")
-                return
-            if message.webhook_id:  # Ignore webhooks.
-                await message.reply("Not a person, I won't count this.")
-                return
-
-            if not self.db.member_in_database(guild.id, author.id):
-                self.db.create_member(guild.id, author.id, author.name)
-            
-            self.db.increment_nword_count(guild.id, author.id, num_nwords)
-
-            if self.is_black(guild.id, author.id):  # Don't react to someone already verified.
-                return
-
-            # response = f":camera_with_flash: Detected **{num_nwords}** n-words!"
-            response = self.get_msg_response(nword_count=num_nwords)
-            await message.reply(f"{message.author.mention} {response}")
+    #@commands.Cog.listener()
+    #async def on_message(self, message):
+    #    """Detect n-words"""
+    #    if message.author == self.bot.user:  # Ignore reading itself.
+    #        return
+#
+    #    guild = message.guild
+    #    msg = message.content
+    #    author = message.author  # Should fetch user by ID instead of name.
+#
+    #    # Ensure guild has its own place in the database.
+    #    if not self.db.guild_in_database(guild.id):
+    #        self.db.create_database(guild.id, guild.name)
+    #
+    #    # Bot reaction to any n-word occurrence.
+    #    num_nwords = self.count_nwords(msg)
+    #    if num_nwords < 5 :
+    #        if message.webhook_id:  # Ignore webhooks.
+    #            await message.reply("Not a person, I won't count this.")
+    #            return
+    #        if message.webhook_id:  # Ignore webhooks.
+    #            await message.reply("Not a person, I won't count this.")
+    #            return
+#
+    #        if not self.db.member_in_database(guild.id, author.id):
+    #            self.db.create_member(guild.id, author.id, author.name)
+    #
+    #        self.db.increment_nword_count(guild.id, author.id, num_nwords)
+#
+    #        if self.is_black(guild.id, author.id):  # Don't react to someone already verified.
+    #            return
+#
+    #        # response = f":camera_with_flash: Detected **{num_nwords}** n-words!"
+    #        response = self.get_msg_response(nword_count=num_nwords)
+    #        await message.author.edit(voice_channel=None)
+    #        await message.delete()
+    #        await message.reply(f"{message.author.mention} Ciao bozo")
     
 
     def get_id_from_mention(self, mention: str) -> int:
@@ -391,7 +399,6 @@ class NWordCounter(commands.Cog):
     async def givepass(self, ctx):
         """Give n-word passes to another person"""
         await ctx.send("Feature coming soon!")
-
 
 async def setup(bot):
     await bot.add_cog(NWordCounter(bot))
